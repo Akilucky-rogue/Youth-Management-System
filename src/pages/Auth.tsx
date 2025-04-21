@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,11 +18,40 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userType, setUserType] = useState("youth");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Parse hash parameters
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(location.search);
+    
+    // Check for error in hash or query parameters
+    const error = hashParams.get("error") || queryParams.get("error");
+    const errorDescription = hashParams.get("error_description") || queryParams.get("error_description");
+    
+    if (error) {
+      let message = "Authentication error";
+      
+      if (errorDescription) {
+        message = errorDescription.replace(/\+/g, " ");
+      }
+      
+      setErrorMessage(message);
+      
+      // Clear the hash after processing
+      if (window.history.replaceState) {
+        window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      }
+    }
+  }, [location]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+    
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -53,6 +84,34 @@ const Auth = () => {
         title: "Error",
         description: error.message,
       });
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setErrorMessage("Please enter your email address first");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Verification email sent",
+        description: "Please check your inbox for the verification email.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
     }
   };
 
@@ -68,6 +127,25 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Authentication Error</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+              
+              {errorMessage.includes("expired") && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={handleResendVerification}
+                >
+                  Resend verification email
+                </Button>
+              )}
+            </Alert>
+          )}
+          
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
               <>
