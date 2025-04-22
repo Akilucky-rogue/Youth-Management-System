@@ -9,50 +9,87 @@ import { BasicProfileForm } from "./profile/BasicProfileForm";
 import { YouthAthleteForm } from "./profile/YouthAthleteForm";
 import { ExpertProfileForm } from "./profile/ExpertProfileForm";
 
+// Define extended profile types to handle the custom fields
+interface ExtendedProfile extends Tables<"profiles"> {
+  phone_text?: string;
+  preferred_contact_method?: "email" | "phone";
+  time_zone?: string;
+}
+
+interface ExtendedYouthAthlete extends Tables<"youth_athletes"> {
+  school?: string;
+  grade?: string;
+  secondary_sports?: string[];
+  goals?: string[];
+  training_availability?: string[];
+}
+
+interface ExtendedExpert extends Tables<"experts"> {
+  sports_expertise?: string[];
+  certifications?: string[];
+  preferred_training_type?: string[];
+  availability?: string[];
+}
+
+import { Tables } from "@/integrations/supabase/types";
+
 const ProfileForm = () => {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [athleteProfile, setAthleteProfile] = useState(null);
-  const [expertProfile, setExpertProfile] = useState(null);
+  const [athleteProfile, setAthleteProfile] = useState<ExtendedYouthAthlete | null>(null);
+  const [expertProfile, setExpertProfile] = useState<ExtendedExpert | null>(null);
+  const [extendedProfile, setExtendedProfile] = useState<ExtendedProfile | null>(null);
 
   // Fetch user-specific profiles when component mounts
   useEffect(() => {
-    const fetchSpecificProfiles = async () => {
+    const fetchProfiles = async () => {
       if (!user || !profile) return;
       
       try {
+        // Fetch the extended profile with custom fields
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*, phone_text, preferred_contact_method, time_zone")
+          .eq("id", user.id)
+          .single();
+          
+        if (!profileError && profileData) {
+          setExtendedProfile(profileData as ExtendedProfile);
+        }
+        
+        // Fetch user type specific profiles
         if (profile.user_type === "youth") {
           const { data, error } = await supabase
             .from("youth_athletes")
-            .select()
+            .select("*, school, grade, secondary_sports, goals, training_availability")
             .eq("id", user.id)
             .single();
             
-          if (!error) {
-            setAthleteProfile(data);
+          if (!error && data) {
+            setAthleteProfile(data as ExtendedYouthAthlete);
           }
         } else if (profile.user_type === "expert") {
           const { data, error } = await supabase
             .from("experts")
-            .select()
+            .select("*, sports_expertise, certifications, preferred_training_type, availability")
             .eq("id", user.id)
             .single();
             
-          if (!error) {
-            setExpertProfile(data);
+          if (!error && data) {
+            setExpertProfile(data as ExtendedExpert);
           }
         }
       } catch (error) {
-        console.error("Error fetching user specific profile:", error);
+        console.error("Error fetching profiles:", error);
       }
     };
 
-    fetchSpecificProfiles();
+    fetchProfiles();
   }, [user, profile]);
 
-  const onSubmit = async (formData: any) => {
+  const handleBasicProfileSubmit = async (formData: any) => {
     if (!user) return;
     
     setIsSubmitting(true);
@@ -72,53 +109,136 @@ const ProfileForm = () => {
 
       if (profileError) throw profileError;
 
-      // Handle user type specific data
-      if (profile?.user_type === "youth") {
-        const { error: youthError } = await supabase
-          .from("youth_athletes")
-          .upsert({
-            id: user.id,
-            age: parseInt(formData.age),
-            primary_sport: formData.primarySport,
-            experience_years: parseInt(formData.experienceYears) || 0,
-            current_level: formData.currentLevel,
-            school: formData.school,
-            grade: formData.grade,
-            secondary_sports: formData.secondarySports.split(",").map((s: string) => s.trim()),
-            goals: formData.goals.split(",").map((s: string) => s.trim()),
-            training_availability: formData.trainingAvailability.split(",").map((s: string) => s.trim()),
-          });
-
-        if (youthError) throw youthError;
-      } else if (profile?.user_type === "expert") {
-        const { error: expertError } = await supabase
-          .from("experts")
-          .upsert({
-            id: user.id,
-            specialization: formData.specialization,
-            years_experience: parseInt(formData.yearsExperience),
-            qualifications: formData.qualifications.split(",").map((s: string) => s.trim()),
-            sports_expertise: formData.sportsExpertise.split(",").map((s: string) => s.trim()),
-            certifications: formData.certifications.split(",").map((s: string) => s.trim()),
-            preferred_training_type: formData.preferredTrainingType.split(",").map((s: string) => s.trim()),
-            availability: formData.availability.split(",").map((s: string) => s.trim()),
-          });
-
-        if (expertError) throw expertError;
-      }
-
       await refreshProfile();
+      
+      // Update the local state
+      setExtendedProfile(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          bio: formData.bio,
+          phone_text: formData.phoneText,
+          preferred_contact_method: formData.preferredContactMethod,
+          time_zone: formData.timeZone,
+        };
+      });
 
       toast({
         title: "Profile updated successfully",
-        description: "Your profile has been updated",
+        description: "Your basic information has been updated",
       });
-
-      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Failed to update profile",
+        description: error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleYouthAthleteSubmit = async (formData: any) => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { error: youthError } = await supabase
+        .from("youth_athletes")
+        .upsert({
+          id: user.id,
+          age: parseInt(formData.age),
+          primary_sport: formData.primarySport,
+          experience_years: parseInt(formData.experienceYears) || 0,
+          current_level: formData.currentLevel,
+          school: formData.school,
+          grade: formData.grade,
+          secondary_sports: formData.secondarySports.split(",").map((s: string) => s.trim()).filter(Boolean),
+          goals: formData.goals.split(",").map((s: string) => s.trim()).filter(Boolean),
+          training_availability: formData.trainingAvailability.split(",").map((s: string) => s.trim()).filter(Boolean),
+        });
+
+      if (youthError) throw youthError;
+      
+      // Update the local state
+      const updatedAthleteProfile = {
+        ...(athleteProfile || {}),
+        age: parseInt(formData.age),
+        primary_sport: formData.primarySport,
+        experience_years: parseInt(formData.experienceYears) || 0,
+        current_level: formData.currentLevel,
+        school: formData.school,
+        grade: formData.grade,
+        secondary_sports: formData.secondarySports.split(",").map((s: string) => s.trim()).filter(Boolean),
+        goals: formData.goals.split(",").map((s: string) => s.trim()).filter(Boolean),
+        training_availability: formData.trainingAvailability.split(",").map((s: string) => s.trim()).filter(Boolean),
+      } as ExtendedYouthAthlete;
+      
+      setAthleteProfile(updatedAthleteProfile);
+
+      toast({
+        title: "Athlete profile updated successfully",
+        description: "Your athlete information has been updated",
+      });
+      
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update athlete profile",
+        description: error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleExpertProfileSubmit = async (formData: any) => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { error: expertError } = await supabase
+        .from("experts")
+        .upsert({
+          id: user.id,
+          specialization: formData.specialization,
+          years_experience: parseInt(formData.yearsExperience),
+          qualifications: formData.qualifications.split(",").map((s: string) => s.trim()).filter(Boolean),
+          sports_expertise: formData.sportsExpertise.split(",").map((s: string) => s.trim()).filter(Boolean),
+          certifications: formData.certifications.split(",").map((s: string) => s.trim()).filter(Boolean),
+          preferred_training_type: formData.preferredTrainingType.split(",").map((s: string) => s.trim()).filter(Boolean),
+          availability: formData.availability.split(",").map((s: string) => s.trim()).filter(Boolean),
+        });
+
+      if (expertError) throw expertError;
+      
+      // Update the local state
+      const updatedExpertProfile = {
+        ...(expertProfile || {}),
+        specialization: formData.specialization,
+        years_experience: parseInt(formData.yearsExperience),
+        qualifications: formData.qualifications.split(",").map((s: string) => s.trim()).filter(Boolean),
+        sports_expertise: formData.sportsExpertise.split(",").map((s: string) => s.trim()).filter(Boolean),
+        certifications: formData.certifications.split(",").map((s: string) => s.trim()).filter(Boolean),
+        preferred_training_type: formData.preferredTrainingType.split(",").map((s: string) => s.trim()).filter(Boolean),
+        availability: formData.availability.split(",").map((s: string) => s.trim()).filter(Boolean),
+      } as ExtendedExpert;
+      
+      setExpertProfile(updatedExpertProfile);
+
+      toast({
+        title: "Expert profile updated successfully",
+        description: "Your expert information has been updated",
+      });
+      
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update expert profile",
         description: error.message,
       });
     } finally {
@@ -132,39 +252,42 @@ const ProfileForm = () => {
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold mb-4">Basic Information</h2>
-        <BasicProfileForm profile={profile} onSubmit={onSubmit} />
+        <BasicProfileForm 
+          profile={extendedProfile} 
+          onSubmit={handleBasicProfileSubmit} 
+          isSubmitting={isSubmitting}
+        />
       </div>
       
       {profile.user_type === "youth" && (
         <div className="pt-6 border-t">
           <h2 className="text-xl font-semibold mb-4">Athlete Information</h2>
-          <YouthAthleteForm athleteProfile={athleteProfile} onSubmit={onSubmit} />
+          <YouthAthleteForm 
+            athleteProfile={athleteProfile} 
+            onSubmit={handleYouthAthleteSubmit}
+            isSubmitting={isSubmitting}
+          />
         </div>
       )}
 
       {profile.user_type === "expert" && (
         <div className="pt-6 border-t">
           <h2 className="text-xl font-semibold mb-4">Expert Information</h2>
-          <ExpertProfileForm expertProfile={expertProfile} onSubmit={onSubmit} />
+          <ExpertProfileForm 
+            expertProfile={expertProfile} 
+            onSubmit={handleExpertProfileSubmit}
+            isSubmitting={isSubmitting}
+          />
         </div>
       )}
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
-          Cancel
-        </Button>
+      <div className="flex justify-between pt-6 border-t">
         <Button 
           type="button" 
-          disabled={isSubmitting}
-          onClick={() => {
-            const formElement = document.querySelector("form");
-            if (formElement) {
-              const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
-              formElement.dispatchEvent(submitEvent);
-            }
-          }}
+          variant="outline" 
+          onClick={() => navigate("/dashboard")}
         >
-          {isSubmitting ? "Saving..." : "Save Profile"}
+          Cancel
         </Button>
       </div>
     </div>

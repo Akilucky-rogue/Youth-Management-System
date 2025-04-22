@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 // Define extended expert type with the new fields
 interface ExtendedExpert extends Tables<"experts"> {
@@ -35,24 +36,22 @@ const expertProfileSchema = z.object({
 type ExpertProfileFormValues = z.infer<typeof expertProfileSchema>;
 
 interface ExpertProfileFormProps {
-  expertProfile: Tables<"experts"> | null;
+  expertProfile: ExtendedExpert | null;
   onSubmit: (data: ExpertProfileFormValues) => void;
+  isSubmitting?: boolean;
 }
 
-export const ExpertProfileForm = ({ expertProfile, onSubmit }: ExpertProfileFormProps) => {
-  // Cast expert profile to our extended type to access the new fields
-  const extendedExpertProfile = expertProfile as ExtendedExpert | null;
-  
+export const ExpertProfileForm = ({ expertProfile, onSubmit, isSubmitting }: ExpertProfileFormProps) => {
   const form = useForm<ExpertProfileFormValues>({
     resolver: zodResolver(expertProfileSchema),
     defaultValues: {
       specialization: expertProfile?.specialization || "",
       yearsExperience: expertProfile?.years_experience?.toString() || "",
       qualifications: expertProfile?.qualifications?.join(", ") || "",
-      sportsExpertise: extendedExpertProfile?.sports_expertise?.join(", ") || "",
-      certifications: extendedExpertProfile?.certifications?.join(", ") || "",
-      preferredTrainingType: extendedExpertProfile?.preferred_training_type?.join(", ") || "",
-      availability: extendedExpertProfile?.availability?.join(", ") || "",
+      sportsExpertise: expertProfile?.sports_expertise?.join(", ") || "",
+      certifications: expertProfile?.certifications?.join(", ") || "",
+      preferredTrainingType: expertProfile?.preferred_training_type?.join(", ") || "",
+      availability: expertProfile?.availability?.join(", ") || "",
     },
   });
 
@@ -158,6 +157,12 @@ export const ExpertProfileForm = ({ expertProfile, onSubmit }: ExpertProfileForm
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save Expert Information"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

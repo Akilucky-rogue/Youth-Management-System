@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 // Define extended profile type with the new fields
 interface ExtendedProfile extends Tables<"profiles"> {
@@ -40,23 +41,21 @@ const basicProfileSchema = z.object({
 type BasicProfileFormValues = z.infer<typeof basicProfileSchema>;
 
 interface BasicProfileFormProps {
-  profile: Tables<"profiles"> | null;
+  profile: ExtendedProfile | null;
   onSubmit: (data: BasicProfileFormValues) => void;
+  isSubmitting?: boolean;
 }
 
-export const BasicProfileForm = ({ profile, onSubmit }: BasicProfileFormProps) => {
-  // Cast profile to our extended type to access the new fields
-  const extendedProfile = profile as ExtendedProfile | null;
-  
+export const BasicProfileForm = ({ profile, onSubmit, isSubmitting }: BasicProfileFormProps) => {
   const form = useForm<BasicProfileFormValues>({
     resolver: zodResolver(basicProfileSchema),
     defaultValues: {
       firstName: profile?.first_name || "",
       lastName: profile?.last_name || "",
       bio: profile?.bio || "",
-      phoneText: extendedProfile?.phone_text || "",
-      preferredContactMethod: (extendedProfile?.preferred_contact_method as "email" | "phone") || "email",
-      timeZone: extendedProfile?.time_zone || "",
+      phoneText: profile?.phone_text || "",
+      preferredContactMethod: (profile?.preferred_contact_method as "email" | "phone") || "email",
+      timeZone: profile?.time_zone || "",
     },
   });
 
@@ -158,6 +157,12 @@ export const BasicProfileForm = ({ profile, onSubmit }: BasicProfileFormProps) =
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save Basic Information"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

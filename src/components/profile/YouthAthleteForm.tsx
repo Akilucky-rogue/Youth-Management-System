@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 // Define extended youth athlete type with the new fields
 interface ExtendedYouthAthlete extends Tables<"youth_athletes"> {
@@ -38,14 +39,12 @@ const youthProfileSchema = z.object({
 type YouthProfileFormValues = z.infer<typeof youthProfileSchema>;
 
 interface YouthAthleteFormProps {
-  athleteProfile: Tables<"youth_athletes"> | null;
+  athleteProfile: ExtendedYouthAthlete | null;
   onSubmit: (data: YouthProfileFormValues) => void;
+  isSubmitting?: boolean;
 }
 
-export const YouthAthleteForm = ({ athleteProfile, onSubmit }: YouthAthleteFormProps) => {
-  // Cast athlete profile to our extended type to access the new fields
-  const extendedAthleteProfile = athleteProfile as ExtendedYouthAthlete | null;
-  
+export const YouthAthleteForm = ({ athleteProfile, onSubmit, isSubmitting }: YouthAthleteFormProps) => {
   const form = useForm<YouthProfileFormValues>({
     resolver: zodResolver(youthProfileSchema),
     defaultValues: {
@@ -53,11 +52,11 @@ export const YouthAthleteForm = ({ athleteProfile, onSubmit }: YouthAthleteFormP
       primarySport: athleteProfile?.primary_sport || "",
       experienceYears: athleteProfile?.experience_years?.toString() || "0",
       currentLevel: athleteProfile?.current_level || "",
-      school: extendedAthleteProfile?.school || "",
-      grade: extendedAthleteProfile?.grade || "",
-      secondarySports: extendedAthleteProfile?.secondary_sports?.join(", ") || "",
-      goals: extendedAthleteProfile?.goals?.join(", ") || "",
-      trainingAvailability: extendedAthleteProfile?.training_availability?.join(", ") || "",
+      school: athleteProfile?.school || "",
+      grade: athleteProfile?.grade || "",
+      secondarySports: athleteProfile?.secondary_sports?.join(", ") || "",
+      goals: athleteProfile?.goals?.join(", ") || "",
+      trainingAvailability: athleteProfile?.training_availability?.join(", ") || "",
     },
   });
 
@@ -201,6 +200,12 @@ export const YouthAthleteForm = ({ athleteProfile, onSubmit }: YouthAthleteFormP
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save Athlete Information"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
