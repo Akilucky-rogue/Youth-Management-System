@@ -15,12 +15,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 
-// Define extended expert type with the new fields
-interface ExtendedExpert extends Tables<"experts"> {
-  sports_expertise?: string[];
-  certifications?: string[];
-  preferred_training_type?: string[];
-  availability?: string[];
+// Define expert type with the correct optional fields
+type BaseExpert = Tables<"experts">;
+
+interface ExtendedExpert extends Omit<BaseExpert, "sports_expertise" | "certifications" | "preferred_training_type" | "availability" | "qualifications" | "rating"> {
+  sports_expertise?: string[] | null;
+  certifications?: string[] | null;
+  preferred_training_type?: string[] | null;
+  availability?: string[] | null;
+  qualifications?: string[] | null;
+  rating?: number | null;
 }
 
 const expertProfileSchema = z.object({

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,29 +8,37 @@ import { useAuth } from "@/providers/AuthProvider";
 import { BasicProfileForm } from "./profile/BasicProfileForm";
 import { YouthAthleteForm } from "./profile/YouthAthleteForm";
 import { ExpertProfileForm } from "./profile/ExpertProfileForm";
-
-interface ExtendedProfile extends Tables<"profiles"> {
-  phone_text?: string;
-  preferred_contact_method?: "email" | "phone";
-  time_zone?: string;
-}
-
-interface ExtendedYouthAthlete extends Tables<"youth_athletes"> {
-  school?: string;
-  grade?: string;
-  secondary_sports?: string[];
-  goals?: string[];
-  training_availability?: string[];
-}
-
-interface ExtendedExpert extends Tables<"experts"> {
-  sports_expertise?: string[];
-  certifications?: string[];
-  preferred_training_type?: string[];
-  availability?: string[];
-}
-
 import { Tables } from "@/integrations/supabase/types";
+
+// Define types with proper optional fields
+type BaseProfile = Tables<"profiles">;
+type BaseYouthAthlete = Tables<"youth_athletes">;
+type BaseExpert = Tables<"experts">;
+
+interface ExtendedProfile extends Omit<BaseProfile, "phone_text" | "preferred_contact_method" | "time_zone"> {
+  phone_text?: string | null;
+  preferred_contact_method?: "email" | "phone" | null;
+  time_zone?: string | null;
+}
+
+interface ExtendedYouthAthlete extends Omit<BaseYouthAthlete, "school" | "grade" | "secondary_sports" | "goals" | "training_availability" | "achievements" | "current_level"> {
+  school?: string | null;
+  grade?: string | null;
+  secondary_sports?: string[] | null;
+  goals?: string[] | null;
+  training_availability?: string[] | null;
+  achievements?: string[] | null;
+  current_level?: string | null;
+}
+
+interface ExtendedExpert extends Omit<BaseExpert, "sports_expertise" | "certifications" | "preferred_training_type" | "availability" | "qualifications" | "rating"> {
+  sports_expertise?: string[] | null;
+  certifications?: string[] | null;
+  preferred_training_type?: string[] | null;
+  availability?: string[] | null;
+  qualifications?: string[] | null;
+  rating?: number | null;
+}
 
 const ProfileForm = () => {
   const { user, profile, refreshProfile } = useAuth();
@@ -66,7 +75,7 @@ const ProfileForm = () => {
           .maybeSingle();
 
         if (!profileError && profileData) {
-          setExtendedProfile(profileData);
+          setExtendedProfile(profileData as ExtendedProfile);
         } else {
           setExtendedProfile(null);
         }
@@ -95,7 +104,7 @@ const ProfileForm = () => {
             .maybeSingle();
 
           if (!error && data) {
-            setAthleteProfile(data);
+            setAthleteProfile(data as ExtendedYouthAthlete);
           } else {
             setAthleteProfile(null);
           }
@@ -121,7 +130,7 @@ const ProfileForm = () => {
             .maybeSingle();
 
           if (!error && data) {
-            setExpertProfile(data);
+            setExpertProfile(data as ExtendedExpert);
           } else {
             setExpertProfile(null);
           }
@@ -165,7 +174,7 @@ const ProfileForm = () => {
           phone_text: formData.phoneText,
           preferred_contact_method: formData.preferredContactMethod,
           time_zone: formData.timeZone,
-        };
+        } as ExtendedProfile;
       });
 
       toast({

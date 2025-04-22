@@ -22,11 +22,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 
-// Define extended profile type with the new fields
-interface ExtendedProfile extends Tables<"profiles"> {
-  phone_text?: string;
-  preferred_contact_method?: "email" | "phone";
-  time_zone?: string;
+// Define profile type with the correct optional fields
+type BaseProfile = Tables<"profiles">;
+
+interface ExtendedProfile extends Omit<BaseProfile, "phone_text" | "preferred_contact_method" | "time_zone"> {
+  phone_text?: string | null;
+  preferred_contact_method?: "email" | "phone" | null;
+  time_zone?: string | null;
 }
 
 const basicProfileSchema = z.object({

@@ -15,13 +15,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 
-// Define extended youth athlete type with the new fields
-interface ExtendedYouthAthlete extends Tables<"youth_athletes"> {
-  school?: string;
-  grade?: string;
-  secondary_sports?: string[];
-  goals?: string[];
-  training_availability?: string[];
+// Define youth athlete type with the correct optional fields
+type BaseYouthAthlete = Tables<"youth_athletes">;
+
+interface ExtendedYouthAthlete extends Omit<BaseYouthAthlete, "school" | "grade" | "secondary_sports" | "goals" | "training_availability" | "achievements" | "current_level"> {
+  school?: string | null;
+  grade?: string | null;
+  secondary_sports?: string[] | null;
+  goals?: string[] | null;
+  training_availability?: string[] | null;
+  achievements?: string[] | null;
+  current_level?: string | null;
 }
 
 const youthProfileSchema = z.object({
