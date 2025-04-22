@@ -14,6 +14,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 
+// Define extended expert type with the new fields
+interface ExtendedExpert extends Tables<"experts"> {
+  sports_expertise?: string[];
+  certifications?: string[];
+  preferred_training_type?: string[];
+  availability?: string[];
+}
+
 const expertProfileSchema = z.object({
   specialization: z.string().min(1, { message: "Specialization is required" }),
   yearsExperience: z.string().min(1, { message: "Years of experience is required" }),
@@ -32,16 +40,19 @@ interface ExpertProfileFormProps {
 }
 
 export const ExpertProfileForm = ({ expertProfile, onSubmit }: ExpertProfileFormProps) => {
+  // Cast expert profile to our extended type to access the new fields
+  const extendedExpertProfile = expertProfile as ExtendedExpert | null;
+  
   const form = useForm<ExpertProfileFormValues>({
     resolver: zodResolver(expertProfileSchema),
     defaultValues: {
       specialization: expertProfile?.specialization || "",
       yearsExperience: expertProfile?.years_experience?.toString() || "",
       qualifications: expertProfile?.qualifications?.join(", ") || "",
-      sportsExpertise: expertProfile?.sports_expertise?.join(", ") || "",
-      certifications: expertProfile?.certifications?.join(", ") || "",
-      preferredTrainingType: expertProfile?.preferred_training_type?.join(", ") || "",
-      availability: expertProfile?.availability?.join(", ") || "",
+      sportsExpertise: extendedExpertProfile?.sports_expertise?.join(", ") || "",
+      certifications: extendedExpertProfile?.certifications?.join(", ") || "",
+      preferredTrainingType: extendedExpertProfile?.preferred_training_type?.join(", ") || "",
+      availability: extendedExpertProfile?.availability?.join(", ") || "",
     },
   });
 

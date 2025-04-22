@@ -14,6 +14,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 
+// Define extended youth athlete type with the new fields
+interface ExtendedYouthAthlete extends Tables<"youth_athletes"> {
+  school?: string;
+  grade?: string;
+  secondary_sports?: string[];
+  goals?: string[];
+  training_availability?: string[];
+}
+
 const youthProfileSchema = z.object({
   age: z.string().min(1, { message: "Age is required" }),
   primarySport: z.string().min(1, { message: "Primary sport is required" }),
@@ -34,6 +43,9 @@ interface YouthAthleteFormProps {
 }
 
 export const YouthAthleteForm = ({ athleteProfile, onSubmit }: YouthAthleteFormProps) => {
+  // Cast athlete profile to our extended type to access the new fields
+  const extendedAthleteProfile = athleteProfile as ExtendedYouthAthlete | null;
+  
   const form = useForm<YouthProfileFormValues>({
     resolver: zodResolver(youthProfileSchema),
     defaultValues: {
@@ -41,11 +53,11 @@ export const YouthAthleteForm = ({ athleteProfile, onSubmit }: YouthAthleteFormP
       primarySport: athleteProfile?.primary_sport || "",
       experienceYears: athleteProfile?.experience_years?.toString() || "0",
       currentLevel: athleteProfile?.current_level || "",
-      school: "",
-      grade: "",
-      secondarySports: athleteProfile?.secondary_sports?.join(", ") || "",
-      goals: athleteProfile?.goals?.join(", ") || "",
-      trainingAvailability: athleteProfile?.training_availability?.join(", ") || "",
+      school: extendedAthleteProfile?.school || "",
+      grade: extendedAthleteProfile?.grade || "",
+      secondarySports: extendedAthleteProfile?.secondary_sports?.join(", ") || "",
+      goals: extendedAthleteProfile?.goals?.join(", ") || "",
+      trainingAvailability: extendedAthleteProfile?.training_availability?.join(", ") || "",
     },
   });
 

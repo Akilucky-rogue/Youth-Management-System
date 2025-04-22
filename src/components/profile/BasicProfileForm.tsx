@@ -21,6 +21,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/integrations/supabase/types";
 
+// Define extended profile type with the new fields
+interface ExtendedProfile extends Tables<"profiles"> {
+  phone_text?: string;
+  preferred_contact_method?: "email" | "phone";
+  time_zone?: string;
+}
+
 const basicProfileSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
   lastName: z.string().min(1, { message: "Last name is required" }),
@@ -38,15 +45,18 @@ interface BasicProfileFormProps {
 }
 
 export const BasicProfileForm = ({ profile, onSubmit }: BasicProfileFormProps) => {
+  // Cast profile to our extended type to access the new fields
+  const extendedProfile = profile as ExtendedProfile | null;
+  
   const form = useForm<BasicProfileFormValues>({
     resolver: zodResolver(basicProfileSchema),
     defaultValues: {
       firstName: profile?.first_name || "",
       lastName: profile?.last_name || "",
       bio: profile?.bio || "",
-      phoneText: profile?.phone_text || "",
-      preferredContactMethod: (profile?.preferred_contact_method as "email" | "phone") || "email",
-      timeZone: profile?.time_zone || "",
+      phoneText: extendedProfile?.phone_text || "",
+      preferredContactMethod: (extendedProfile?.preferred_contact_method as "email" | "phone") || "email",
+      timeZone: extendedProfile?.time_zone || "",
     },
   });
 
