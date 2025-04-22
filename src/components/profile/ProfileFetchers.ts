@@ -4,33 +4,54 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/providers/AuthProvider";
 
+// Define base types from database schema
 type BaseProfile = Tables<"profiles">;
 type BaseYouthAthlete = Tables<"youth_athletes">;
 type BaseExpert = Tables<"experts">;
 
-export interface ExtendedProfile extends Omit<BaseProfile, "phone_text" | "preferred_contact_method" | "time_zone"> {
-  phone_text?: string | null;
-  preferred_contact_method?: "email" | "phone" | null;
-  time_zone?: string | null;
+// Define extended interfaces with proper optional types
+export interface ExtendedProfile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  user_type: string;
+  bio: string | null;
+  phone_text: string | null;
+  preferred_contact_method: "email" | "phone" | null;
+  time_zone: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ExtendedYouthAthlete extends Omit<BaseYouthAthlete, "school" | "grade" | "secondary_sports" | "goals" | "training_availability" | "achievements" | "current_level"> {
-  school?: string | null;
-  grade?: string | null;
-  secondary_sports?: string[] | null;
-  goals?: string[] | null;
-  training_availability?: string[] | null;
-  achievements?: string[] | null;
-  current_level?: string | null;
+export interface ExtendedYouthAthlete {
+  id: string;
+  age: number;
+  primary_sport: string;
+  experience_years: number;
+  current_level: string | null;
+  school: string | null;
+  grade: string | null;
+  secondary_sports: string[] | null;
+  goals: string[] | null;
+  training_availability: string[] | null;
+  achievements: string[] | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ExtendedExpert extends Omit<BaseExpert, "sports_expertise" | "certifications" | "preferred_training_type" | "availability" | "qualifications" | "rating"> {
-  sports_expertise?: string[] | null;
-  certifications?: string[] | null;
-  preferred_training_type?: string[] | null;
-  availability?: string[] | null;
-  qualifications?: string[] | null;
-  rating?: number | null;
+export interface ExtendedExpert {
+  id: string;
+  specialization: string;
+  years_experience: number;
+  sports_expertise: string[] | null;
+  certifications: string[] | null;
+  preferred_training_type: string[] | null;
+  availability: string[] | null;
+  qualifications: string[] | null;
+  rating: number | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useProfilesFetcher() {
@@ -44,6 +65,7 @@ export function useProfilesFetcher() {
       if (!user || !profile) return;
 
       try {
+        // Fetch basic profile data
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select(
@@ -65,11 +87,20 @@ export function useProfilesFetcher() {
           .maybeSingle();
 
         if (!profileError && profileData) {
-          setExtendedProfile(profileData as ExtendedProfile);
+          // Handle potentially incorrect preferred_contact_method value
+          const preferred = profileData.preferred_contact_method;
+          const safePreferred = (preferred === "email" || preferred === "phone") ? preferred : null;
+          
+          setExtendedProfile({
+            ...profileData,
+            preferred_contact_method: safePreferred
+          } as ExtendedProfile);
         } else {
+          console.error("Error fetching profile:", profileError);
           setExtendedProfile(null);
         }
 
+        // Fetch youth athlete data if applicable
         if (profile.user_type === "youth") {
           const { data, error } = await supabase
             .from("youth_athletes")
@@ -96,9 +127,12 @@ export function useProfilesFetcher() {
           if (!error && data) {
             setAthleteProfile(data as ExtendedYouthAthlete);
           } else {
+            console.error("Error fetching youth athlete profile:", error);
             setAthleteProfile(null);
           }
-        } else if (profile.user_type === "expert") {
+        } 
+        // Fetch expert data if applicable
+        else if (profile.user_type === "expert") {
           const { data, error } = await supabase
             .from("experts")
             .select(
@@ -122,16 +156,24 @@ export function useProfilesFetcher() {
           if (!error && data) {
             setExpertProfile(data as ExtendedExpert);
           } else {
+            console.error("Error fetching expert profile:", error);
             setExpertProfile(null);
           }
         }
       } catch (error) {
-        console.error("Error fetching profiles:", error);
+        console.error("Error in fetchProfiles:", error);
       }
     };
 
     fetchProfiles();
   }, [user, profile]);
 
-  return { extendedProfile, athleteProfile, expertProfile, setExtendedProfile, setAthleteProfile, setExpertProfile };
+  return { 
+    extendedProfile, 
+    athleteProfile, 
+    expertProfile, 
+    setExtendedProfile, 
+    setAthleteProfile, 
+    setExpertProfile 
+  };
 }

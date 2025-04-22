@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,21 +11,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
-
-// Define youth athlete type with the correct optional fields
-type BaseYouthAthlete = Tables<"youth_athletes">;
-
-interface ExtendedYouthAthlete extends Omit<BaseYouthAthlete, "school" | "grade" | "secondary_sports" | "goals" | "training_availability" | "achievements" | "current_level"> {
-  school?: string | null;
-  grade?: string | null;
-  secondary_sports?: string[] | null;
-  goals?: string[] | null;
-  training_availability?: string[] | null;
-  achievements?: string[] | null;
-  current_level?: string | null;
-}
+import { ExtendedYouthAthlete } from "./ProfileFetchers";
 
 const youthProfileSchema = z.object({
   age: z.string().min(1, { message: "Age is required" }),

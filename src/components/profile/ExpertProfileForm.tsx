@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,20 +11,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
-
-// Define expert type with the correct optional fields
-type BaseExpert = Tables<"experts">;
-
-interface ExtendedExpert extends Omit<BaseExpert, "sports_expertise" | "certifications" | "preferred_training_type" | "availability" | "qualifications" | "rating"> {
-  sports_expertise?: string[] | null;
-  certifications?: string[] | null;
-  preferred_training_type?: string[] | null;
-  availability?: string[] | null;
-  qualifications?: string[] | null;
-  rating?: number | null;
-}
+import { ExtendedExpert } from "./ProfileFetchers";
 
 const expertProfileSchema = z.object({
   specialization: z.string().min(1, { message: "Specialization is required" }),

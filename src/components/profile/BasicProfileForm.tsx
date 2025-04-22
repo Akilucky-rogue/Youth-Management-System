@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,17 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
-
-// Define profile type with the correct optional fields
-type BaseProfile = Tables<"profiles">;
-
-interface ExtendedProfile extends Omit<BaseProfile, "phone_text" | "preferred_contact_method" | "time_zone"> {
-  phone_text?: string | null;
-  preferred_contact_method?: "email" | "phone" | null;
-  time_zone?: string | null;
-}
+import { ExtendedProfile } from "./ProfileFetchers";
 
 const basicProfileSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
@@ -56,7 +46,7 @@ export const BasicProfileForm = ({ profile, onSubmit, isSubmitting }: BasicProfi
       lastName: profile?.last_name || "",
       bio: profile?.bio || "",
       phoneText: profile?.phone_text || "",
-      preferredContactMethod: (profile?.preferred_contact_method as "email" | "phone") || "email",
+      preferredContactMethod: profile?.preferred_contact_method || "email",
       timeZone: profile?.time_zone || "",
     },
   });

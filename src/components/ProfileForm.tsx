@@ -8,9 +8,6 @@ import { YouthAthleteForm } from "./profile/YouthAthleteForm";
 import { ExpertProfileForm } from "./profile/ExpertProfileForm";
 import {
   useProfilesFetcher,
-  ExtendedProfile,
-  ExtendedYouthAthlete,
-  ExtendedExpert,
 } from "./profile/ProfileFetchers";
 import {
   useBasicProfileHandler,
@@ -32,22 +29,24 @@ const ProfileForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Create handler functions using the custom hooks
+  const basicProfileHandler = useBasicProfileHandler({ setExtendedProfile });
+  const youthAthleteHandler = useYouthAthleteHandler({ athleteProfile, setAthleteProfile });
+  const expertProfileHandler = useExpertProfileHandler({ expertProfile, setExpertProfile });
+
   const handleBasicProfileSubmit = async (formData: any) => {
     setIsSubmitting(true);
-    const handler = useBasicProfileHandler({ setExtendedProfile });
-    await handler(formData, () => setIsSubmitting(false));
+    await basicProfileHandler(formData, () => setIsSubmitting(false));
   };
 
   const handleYouthAthleteSubmit = async (formData: any) => {
     setIsSubmitting(true);
-    const handler = useYouthAthleteHandler({ athleteProfile, setAthleteProfile });
-    await handler(formData, () => setIsSubmitting(false));
+    await youthAthleteHandler(formData, () => setIsSubmitting(false));
   };
 
   const handleExpertProfileSubmit = async (formData: any) => {
     setIsSubmitting(true);
-    const handler = useExpertProfileHandler({ expertProfile, setExpertProfile });
-    await handler(formData, () => setIsSubmitting(false));
+    await expertProfileHandler(formData, () => setIsSubmitting(false));
   };
 
   if (!user || !profile) return null;
