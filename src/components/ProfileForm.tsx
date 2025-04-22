@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,6 @@ import { BasicProfileForm } from "./profile/BasicProfileForm";
 import { YouthAthleteForm } from "./profile/YouthAthleteForm";
 import { ExpertProfileForm } from "./profile/ExpertProfileForm";
 
-// Define extended profile types to handle the custom fields
 interface ExtendedProfile extends Tables<"profiles"> {
   phone_text?: string;
   preferred_contact_method?: "email" | "phone";
@@ -42,43 +40,90 @@ const ProfileForm = () => {
   const [expertProfile, setExpertProfile] = useState<ExtendedExpert | null>(null);
   const [extendedProfile, setExtendedProfile] = useState<ExtendedProfile | null>(null);
 
-  // Fetch user-specific profiles when component mounts
   useEffect(() => {
     const fetchProfiles = async () => {
       if (!user || !profile) return;
-      
+
       try {
-        // Fetch the extended profile with custom fields
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("*, phone_text, preferred_contact_method, time_zone")
+          .select(
+            `
+            id,
+            first_name,
+            last_name,
+            bio,
+            phone_text,
+            preferred_contact_method,
+            time_zone,
+            avatar_url,
+            created_at,
+            updated_at,
+            user_type
+            `
+          )
           .eq("id", user.id)
-          .single();
-          
+          .maybeSingle();
+
         if (!profileError && profileData) {
-          setExtendedProfile(profileData as ExtendedProfile);
+          setExtendedProfile(profileData);
+        } else {
+          setExtendedProfile(null);
         }
-        
-        // Fetch user type specific profiles
+
         if (profile.user_type === "youth") {
           const { data, error } = await supabase
             .from("youth_athletes")
-            .select("*, school, grade, secondary_sports, goals, training_availability")
+            .select(
+              `
+              id,
+              age,
+              primary_sport,
+              experience_years,
+              current_level,
+              school,
+              grade,
+              secondary_sports,
+              goals,
+              training_availability,
+              created_at,
+              updated_at,
+              achievements
+              `
+            )
             .eq("id", user.id)
-            .single();
-            
+            .maybeSingle();
+
           if (!error && data) {
-            setAthleteProfile(data as ExtendedYouthAthlete);
+            setAthleteProfile(data);
+          } else {
+            setAthleteProfile(null);
           }
         } else if (profile.user_type === "expert") {
           const { data, error } = await supabase
             .from("experts")
-            .select("*, sports_expertise, certifications, preferred_training_type, availability")
+            .select(
+              `
+              id,
+              specialization,
+              qualifications,
+              years_experience,
+              sports_expertise,
+              certifications,
+              preferred_training_type,
+              availability,
+              created_at,
+              updated_at,
+              rating
+              `
+            )
             .eq("id", user.id)
-            .single();
-            
+            .maybeSingle();
+
           if (!error && data) {
-            setExpertProfile(data as ExtendedExpert);
+            setExpertProfile(data);
+          } else {
+            setExpertProfile(null);
           }
         }
       } catch (error) {
@@ -94,7 +139,6 @@ const ProfileForm = () => {
     
     setIsSubmitting(true);
     try {
-      // Update basic profile information
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -111,7 +155,6 @@ const ProfileForm = () => {
 
       await refreshProfile();
       
-      // Update the local state
       setExtendedProfile(prev => {
         if (!prev) return null;
         return {
@@ -162,7 +205,6 @@ const ProfileForm = () => {
 
       if (youthError) throw youthError;
       
-      // Update the local state
       const updatedAthleteProfile = {
         ...(athleteProfile || {}),
         age: parseInt(formData.age),
@@ -215,7 +257,6 @@ const ProfileForm = () => {
 
       if (expertError) throw expertError;
       
-      // Update the local state
       const updatedExpertProfile = {
         ...(expertProfile || {}),
         specialization: formData.specialization,

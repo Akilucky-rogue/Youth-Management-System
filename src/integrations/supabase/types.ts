@@ -71,29 +71,41 @@ export type Database = {
       }
       experts: {
         Row: {
+          availability: string[] | null
+          certifications: string[] | null
           created_at: string
           id: string
+          preferred_training_type: string[] | null
           qualifications: string[] | null
           rating: number | null
           specialization: string
+          sports_expertise: string[] | null
           updated_at: string
           years_experience: number
         }
         Insert: {
+          availability?: string[] | null
+          certifications?: string[] | null
           created_at?: string
           id: string
+          preferred_training_type?: string[] | null
           qualifications?: string[] | null
           rating?: number | null
           specialization: string
+          sports_expertise?: string[] | null
           updated_at?: string
           years_experience: number
         }
         Update: {
+          availability?: string[] | null
+          certifications?: string[] | null
           created_at?: string
           id?: string
+          preferred_training_type?: string[] | null
           qualifications?: string[] | null
           rating?: number | null
           specialization?: string
+          sports_expertise?: string[] | null
           updated_at?: string
           years_experience?: number
         }
@@ -115,6 +127,9 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          phone_text: string | null
+          preferred_contact_method: string | null
+          time_zone: string | null
           updated_at: string
           user_type: string
         }
@@ -125,6 +140,9 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          phone_text?: string | null
+          preferred_contact_method?: string | null
+          time_zone?: string | null
           updated_at?: string
           user_type: string
         }
@@ -135,6 +153,9 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          phone_text?: string | null
+          preferred_contact_method?: string | null
+          time_zone?: string | null
           updated_at?: string
           user_type?: string
         }
@@ -294,8 +315,13 @@ export type Database = {
           created_at: string
           current_level: string | null
           experience_years: number
+          goals: string[] | null
+          grade: string | null
           id: string
           primary_sport: string
+          school: string | null
+          secondary_sports: string[] | null
+          training_availability: string[] | null
           updated_at: string
         }
         Insert: {
@@ -304,8 +330,13 @@ export type Database = {
           created_at?: string
           current_level?: string | null
           experience_years?: number
+          goals?: string[] | null
+          grade?: string | null
           id: string
           primary_sport: string
+          school?: string | null
+          secondary_sports?: string[] | null
+          training_availability?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -314,8 +345,13 @@ export type Database = {
           created_at?: string
           current_level?: string | null
           experience_years?: number
+          goals?: string[] | null
+          grade?: string | null
           id?: string
           primary_sport?: string
+          school?: string | null
+          secondary_sports?: string[] | null
+          training_availability?: string[] | null
           updated_at?: string
         }
         Relationships: [
