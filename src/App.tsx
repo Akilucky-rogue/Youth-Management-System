@@ -11,6 +11,12 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
+// New dashboard pages
+import Schedule from "./pages/dashboard/Schedule";
+import Messages from "./pages/dashboard/Messages";
+import Evaluations from "./pages/dashboard/Evaluations";
+import Reports from "./pages/dashboard/Reports";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -25,6 +31,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
+            
+            {/* New dashboard routes */}
+            <Route path="/dashboard/schedule" element={<Schedule />} />
+            <Route path="/dashboard/messages" element={<Messages />} />
+            <Route path="/dashboard/evaluations" element={<Evaluations />} />
+            <Route path="/dashboard/reports" element={<Reports />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
