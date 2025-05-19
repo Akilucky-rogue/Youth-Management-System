@@ -1,10 +1,10 @@
-
 import { useAuth } from "@/providers/AuthProvider";
 import { UserCheck, Settings, CalendarDays, Users, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { User, Medal, Clipboard } from "lucide-react";
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
@@ -168,6 +168,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-// Missing import is fixed
-import { User } from "lucide-react";
