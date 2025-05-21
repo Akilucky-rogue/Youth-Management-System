@@ -1,168 +1,292 @@
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { 
+  CalendarClock, 
+  MessageSquare, 
+  Medal, 
+  Clipboard, 
+  User, 
+  BarChart3, 
+  Clock,
+  ArrowRight
+} from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
-import { UserCheck, Settings, CalendarDays, Users, Award } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { User, Medal, Clipboard } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
+  const [progress, setProgress] = useState(65);
 
-  const isProfileIncomplete = () => {
-    if (!profile) return true;
-    
-    // Check if basic profile is complete
-    if (!profile.first_name || !profile.last_name) return true;
-    
-    return false;
+  if (!user || !profile) return null;
+
+  const isYouthAthlete = profile.user_type === "youth";
+  const isExpert = profile.user_type === "expert";
+  
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
   };
 
-  const isYouthAthlete = profile?.user_type === "youth";
-  const isExpert = profile?.user_type === "expert";
-
   return (
-    <DashboardLayout title="Welcome to Your Dashboard">
-      {isProfileIncomplete() && (
-        <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <UserCheck className="h-5 w-5 text-amber-600" />
-            <h2 className="font-semibold text-amber-800">Complete Your Profile</h2>
-          </div>
-          <p className="text-amber-700 mb-3">
-            Please complete your profile to get the most out of TalentSpark.
-          </p>
-          <Button
-            onClick={() => navigate("/profile")}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            Complete Profile
-          </Button>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <DashboardLayout title="Dashboard">
+      <div className="grid grid-cols-1 gap-6">
+        {/* Welcome Card */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              My Profile
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl">
+              {greeting()}, {profile.first_name}!
             </CardTitle>
+            <CardDescription>
+              Here's what's happening with your {isYouthAthlete ? "athletic journey" : "expertise"} today.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <p>
-                <span className="font-medium">Name:</span>{" "}
-                {profile ? `${profile.first_name} ${profile.last_name}` : "Not set"}
-              </p>
-              <p>
-                <span className="font-medium">User Type:</span>{" "}
-                {profile?.user_type ? profile.user_type.charAt(0).toUpperCase() + profile.user_type.slice(1) : "Not set"}
-              </p>
-              <p>
-                <span className="font-medium">Bio:</span>{" "}
-                {profile?.bio || "No bio provided"}
-              </p>
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
-                <Settings className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
+            <div className="mt-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">Profile Completion</h3>
+              <div className="space-y-2">
+                <Progress value={progress} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  Your profile is {progress}% complete. 
+                  <Link to="/profile" className="text-talent-indigo ml-1 hover:underline">
+                    Complete your profile
+                  </Link>
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Upcoming Sessions</p>
+                  <h4 className="text-2xl font-bold mt-1">0</h4>
+                </div>
+                <div className="p-2 bg-talent-indigo/10 rounded-full">
+                  <CalendarClock className="h-5 w-5 text-talent-indigo" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Unread Messages</p>
+                  <h4 className="text-2xl font-bold mt-1">2</h4>
+                </div>
+                <div className="p-2 bg-talent-purple/10 rounded-full">
+                  <MessageSquare className="h-5 w-5 text-talent-purple" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {isYouthAthlete && (
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Evaluations</p>
+                    <h4 className="text-2xl font-bold mt-1">0</h4>
+                  </div>
+                  <div className="p-2 bg-talent-green/10 rounded-full">
+                    <Medal className="h-5 w-5 text-talent-green" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isExpert && (
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Reports Due</p>
+                    <h4 className="text-2xl font-bold mt-1">0</h4>
+                  </div>
+                  <div className="p-2 bg-talent-green/10 rounded-full">
+                    <Clipboard className="h-5 w-5 text-talent-green" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Profile Views</p>
+                  <h4 className="text-2xl font-bold mt-1">6</h4>
+                </div>
+                <div className="p-2 bg-talent-orange/10 rounded-full">
+                  <User className="h-5 w-5 text-talent-orange" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main content section - different for youth vs expert */}
+        {isYouthAthlete ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Your latest progress and achievements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Timeline items */}
+                  <div className="flex items-start">
+                    <div className="mr-4 p-2 bg-talent-indigo/10 rounded-full">
+                      <User className="h-4 w-4 text-talent-indigo" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Profile Created</p>
+                      <p className="text-sm text-muted-foreground">You joined TalentSpark</p>
+                      <p className="text-xs text-muted-foreground mt-1">Today</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" className="w-full">
+                  View All Activity
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Events</CardTitle>
+                <CardDescription>Your scheduled sessions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-6">
+                  <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                  <h3 className="text-sm font-medium mb-1">No upcoming events</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Schedule sessions with experts to improve your skills
+                  </p>
+                  <Button variant="outline" size="sm">
+                    Schedule Now
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Athletes Overview</CardTitle>
+                <CardDescription>Manage your athletes and evaluations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-6">
+                  <User className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                  <h3 className="text-sm font-medium mb-1">No athletes assigned yet</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Connect with young athletes to provide evaluations and guidance
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" className="w-full">
+                  Browse Athletes
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance</CardTitle>
+                <CardDescription>Your expert profile stats</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Total Evaluations</span>
+                    <span className="font-medium">0</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Response Rate</span>
+                    <span className="font-medium">100%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Avg. Rating</span>
+                    <span className="font-medium">N/A</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <Button variant="ghost" size="sm" className="w-full flex items-center justify-center gap-1">
+                  <span>View Details</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        )}
+
+        {/* Quick Links */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5" />
-              Upcoming Schedule
-            </CardTitle>
+            <CardTitle>Quick Links</CardTitle>
+            <CardDescription>Access commonly used features</CardDescription>
           </CardHeader>
-          <CardContent className="pt-2">
-            <p className="text-sm text-muted-foreground mb-4">
-              You have no upcoming events scheduled.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/schedule")}>
-              View Schedule
-            </Button>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link to="/profile">
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <User className="h-6 w-6 mb-2 text-talent-indigo" />
+                  <span className="text-sm font-medium">Profile</span>
+                </div>
+              </Link>
+              <Link to="/dashboard/messages">
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <MessageSquare className="h-6 w-6 mb-2 text-talent-purple" />
+                  <span className="text-sm font-medium">Messages</span>
+                </div>
+              </Link>
+              <Link to="/dashboard/schedule">
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <CalendarClock className="h-6 w-6 mb-2 text-talent-green" />
+                  <span className="text-sm font-medium">Schedule</span>
+                </div>
+              </Link>
+              {isYouthAthlete ? (
+                <Link to="/dashboard/evaluations">
+                  <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <Medal className="h-6 w-6 mb-2 text-talent-orange" />
+                    <span className="text-sm font-medium">Evaluations</span>
+                  </div>
+                </Link>
+              ) : (
+                <Link to="/dashboard/reports">
+                  <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <Clipboard className="h-6 w-6 mb-2 text-talent-orange" />
+                    <span className="text-sm font-medium">Reports</span>
+                  </div>
+                </Link>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Youth-specific cards */}
-      {isYouthAthlete && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Medal className="h-5 w-5" />
-                Latest Evaluations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <p className="text-sm text-muted-foreground mb-4">
-                No evaluations yet. Connect with coaches to get feedback.
-              </p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/evaluations")}>
-                View Evaluations
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                Skills Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <p className="text-sm text-muted-foreground">
-                Start training to track your progress.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Expert-specific cards */}
-      {isExpert && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                My Athletes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <p className="text-sm text-muted-foreground mb-4">
-                You haven't connected with any athletes yet.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clipboard className="h-5 w-5" />
-                Evaluation Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2">
-              <p className="text-sm text-muted-foreground mb-4">
-                Create and manage athlete evaluations.
-              </p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/reports")}>
-                Manage Reports
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </DashboardLayout>
   );
 };
