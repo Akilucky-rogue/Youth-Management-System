@@ -51,19 +51,19 @@ const Evaluations = () => {
     );
   }
 
-  const filteredEvaluations = evaluations.filter(eval => 
-    eval.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    eval.sport.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    eval.expertName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEvaluations = evaluations.filter(item => 
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.sport.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.expertName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const completedEvaluations = evaluations.filter(eval => eval.status === "completed");
-  const pendingEvaluations = evaluations.filter(eval => eval.status === "pending");
+  const completedEvaluations = evaluations.filter(item => item.status === "completed");
+  const pendingEvaluations = evaluations.filter(item => item.status === "pending");
 
   const calculateAverageSkill = (skill: keyof Evaluation["skills"]) => {
     if (completedEvaluations.length === 0) return 0;
     
-    const sum = completedEvaluations.reduce((acc, eval) => acc + eval.skills[skill], 0);
+    const sum = completedEvaluations.reduce((acc, item) => acc + item.skills[skill], 0);
     return sum / completedEvaluations.length;
   };
 
