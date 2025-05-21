@@ -7,7 +7,11 @@ import {
   User, 
   MessageSquare,
   Medal,
-  Clipboard
+  Clipboard,
+  Settings,
+  TrendingUp,
+  Dumbbell,
+  Users
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -57,6 +61,31 @@ export const DashboardNav = () => {
       icon: Clipboard,
       path: "/dashboard/reports",
       showFor: ["expert"],
+    },
+    // New nav items
+    {
+      label: "Expert Directory",
+      icon: Users,
+      path: "/dashboard/experts",
+      showFor: ["youth"],
+    },
+    {
+      label: "Training Plans",
+      icon: Dumbbell,
+      path: "/dashboard/training",
+      showFor: ["youth", "expert"],
+    },
+    {
+      label: "Analytics",
+      icon: TrendingUp,
+      path: "/dashboard/analytics",
+      showFor: ["youth", "expert"],
+    },
+    {
+      label: "Settings",
+      icon: Settings,
+      path: "/dashboard/settings",
+      showFor: ["youth", "expert"],
     },
   ];
 
