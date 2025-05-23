@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -9,7 +8,8 @@ import {
   User, 
   BarChart3, 
   Clock,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -18,10 +18,42 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [progress, setProgress] = useState(65);
 
-  if (!user || !profile) return null;
+  // If still loading, show a loading indicator inside the dashboard layout
+  if (loading) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-muted-foreground">Loading your dashboard...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // If not loading but no user/profile, show a message instead of returning null
+  if (!user || !profile) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <Card>
+          <CardContent className="text-center py-8">
+            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Profile not available</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
+              Please make sure you're logged in or try refreshing the page.
+            </p>
+            <Button asChild>
+              <Link to="/auth">Go to Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   const isYouthAthlete = profile.user_type === "youth";
   const isExpert = profile.user_type === "expert";

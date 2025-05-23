@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -21,14 +22,6 @@ const DashboardLayout = ({ children, title = "Dashboard" }: DashboardLayoutProps
       navigate("/auth");
     }
   }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 flex justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <>
