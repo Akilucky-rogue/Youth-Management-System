@@ -5,14 +5,46 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/providers/AuthProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCircle, Settings, Shield } from "lucide-react";
+import { UserCircle, Settings, Shield, Loader2 } from "lucide-react";
 
 const Profile = () => {
-  const { profile } = useAuth();
+  const { profile, loading } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   
+  // Determine user type
   const isYouthAthlete = profile?.user_type === "youth";
   const isExpert = profile?.user_type === "expert";
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <DashboardLayout title="Your Profile">
+        <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-muted-foreground">Loading your profile...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Handle no profile state (should redirect in DashboardLayout, but just in case)
+  if (!profile) {
+    return (
+      <DashboardLayout title="Your Profile">
+        <Card>
+          <CardContent className="text-center py-8">
+            <UserCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Profile not available</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
+              Please make sure you're logged in or try refreshing the page.
+            </p>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Your Profile">

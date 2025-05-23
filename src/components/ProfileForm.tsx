@@ -15,7 +15,7 @@ import {
   useExpertProfileHandler,
 } from "./profile/ProfileHandlers";
 import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ProfileFormProps {
@@ -33,6 +33,7 @@ const ProfileForm = ({ activeTab = "profile" }: ProfileFormProps) => {
     setAthleteProfile,
     expertProfile,
     setExpertProfile,
+    loading: profileDataLoading,
   } = useProfilesFetcher();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,8 +53,8 @@ const ProfileForm = ({ activeTab = "profile" }: ProfileFormProps) => {
         title: "Profile updated",
         description: "Your basic information has been saved successfully.",
       });
-    } catch (error) {
-      setFormError("Failed to update profile. Please try again.");
+    } catch (error: any) {
+      setFormError(error.message || "Failed to update profile. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -67,8 +68,8 @@ const ProfileForm = ({ activeTab = "profile" }: ProfileFormProps) => {
         title: "Athlete profile updated",
         description: "Your athlete information has been saved successfully.",
       });
-    } catch (error) {
-      setFormError("Failed to update athlete profile. Please try again.");
+    } catch (error: any) {
+      setFormError(error.message || "Failed to update athlete profile. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -82,13 +83,32 @@ const ProfileForm = ({ activeTab = "profile" }: ProfileFormProps) => {
         title: "Expert profile updated",
         description: "Your expert information has been saved successfully.",
       });
-    } catch (error) {
-      setFormError("Failed to update expert profile. Please try again.");
+    } catch (error: any) {
+      setFormError(error.message || "Failed to update expert profile. Please try again.");
       setIsSubmitting(false);
     }
   };
 
-  if (!user || !profile) return null;
+  if (!user || !profile) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-muted-foreground">
+          Please sign in to manage your profile.
+        </p>
+      </div>
+    );
+  }
+
+  if (profileDataLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="text-muted-foreground">Loading profile data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

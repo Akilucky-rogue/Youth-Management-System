@@ -59,10 +59,18 @@ export function useProfilesFetcher() {
   const [athleteProfile, setAthleteProfile] = useState<ExtendedYouthAthlete | null>(null);
   const [expertProfile, setExpertProfile] = useState<ExtendedExpert | null>(null);
   const [extendedProfile, setExtendedProfile] = useState<ExtendedProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      if (!user || !profile) return;
+      if (!user || !profile) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
 
       try {
         // Fetch basic profile data
@@ -97,6 +105,7 @@ export function useProfilesFetcher() {
           } as ExtendedProfile);
         } else {
           console.error("Error fetching profile:", profileError);
+          setError(profileError?.message || "Failed to fetch profile data");
           setExtendedProfile(null);
         }
 
@@ -128,7 +137,28 @@ export function useProfilesFetcher() {
             setAthleteProfile(data as ExtendedYouthAthlete);
           } else {
             console.error("Error fetching youth athlete profile:", error);
-            setAthleteProfile(null);
+            
+            // Create a default athlete profile if not found
+            if (error.code === "PGRST116") { // Record not found error
+              setAthleteProfile({
+                id: user.id,
+                age: 0,
+                primary_sport: "",
+                experience_years: 0,
+                current_level: null,
+                school: null,
+                grade: null,
+                secondary_sports: [],
+                goals: [],
+                training_availability: [],
+                achievements: [],
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            } else {
+              setError(error?.message || "Failed to fetch athlete data");
+              setAthleteProfile(null);
+            }
           }
         } 
         // Fetch expert data if applicable
@@ -157,11 +187,33 @@ export function useProfilesFetcher() {
             setExpertProfile(data as ExtendedExpert);
           } else {
             console.error("Error fetching expert profile:", error);
-            setExpertProfile(null);
+            
+            // Create a default expert profile if not found
+            if (error.code === "PGRST116") { // Record not found error
+              setExpertProfile({
+                id: user.id,
+                specialization: "",
+                years_experience: 0,
+                sports_expertise: [],
+                certifications: [],
+                preferred_training_type: [],
+                availability: [],
+                qualifications: [],
+                rating: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            } else {
+              setError(error?.message || "Failed to fetch expert data");
+              setExpertProfile(null);
+            }
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error in fetchProfiles:", error);
+        setError(error?.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -174,6 +226,8 @@ export function useProfilesFetcher() {
     expertProfile, 
     setExtendedProfile, 
     setAthleteProfile, 
-    setExpertProfile 
+    setExpertProfile,
+    loading,
+    error
   };
 }
