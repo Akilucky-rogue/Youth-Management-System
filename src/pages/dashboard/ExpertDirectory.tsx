@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -114,7 +113,7 @@ const ExpertDirectory = () => {
                 <SelectValue placeholder="Sport" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Sports</SelectItem>
+                <SelectItem value="all">All Sports</SelectItem>
                 {uniqueSports.map(sport => (
                   <SelectItem key={sport} value={sport}>{sport}</SelectItem>
                 ))}
